@@ -910,3 +910,244 @@ body.deck-mode {
 @media (prefers-reduced-motion: reduce) {
   .slide { transition: opacity .001s linear, visibility .001s linear; transform: none; }
 }
+
+/* =========================================================================
+   GLASS / visionOS DEPTH + SUBTLE MOTION  (frosted glass restyle)
+   Layered ambient background · frosted floating panels · staggered entrance.
+   Animate only transform/opacity. backdrop-filter is never animated.
+   ========================================================================= */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.52);
+  --glass-bg-strong: rgba(255, 255, 255, 0.74);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-blur: blur(22px) saturate(155%);
+  --glass-blur-sm: blur(16px) saturate(150%);
+  --glass-shadow:
+    0 22px 55px -26px rgba(58, 46, 120, 0.30),
+    0 4px 14px -8px rgba(58, 46, 120, 0.14);
+  --glass-shadow-sm: 0 10px 30px -14px rgba(58, 46, 120, 0.26);
+  --deck-base:
+    radial-gradient(1200px 900px at 12% -6%, rgba(124, 92, 255, 0.12), transparent 55%),
+    radial-gradient(1100px 820px at 96% 6%, rgba(14, 116, 144, 0.10), transparent 55%),
+    linear-gradient(180deg, #fbfbfe, #f4f5fb 58%, #eef0f8);
+}
+
+/* ---- layered ambient background (replaces flat white) ---- */
+body.deck-mode { background: var(--deck-base); }
+.deck { background: var(--deck-base); }
+
+/* large, faint, blurred colour blooms drifting behind the frosted panels */
+.deck::before,
+.deck::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  will-change: transform;
+}
+.deck::before {
+  width: 48vw; height: 48vw;
+  left: -10vw; top: -12vh;
+  background: radial-gradient(circle, rgba(124, 92, 255, 0.20), transparent 68%);
+  animation: bloomDriftA 26s ease-in-out infinite alternate;
+}
+.deck::after {
+  width: 54vw; height: 54vw;
+  right: -14vw; bottom: -18vh;
+  background: radial-gradient(circle, rgba(14, 116, 144, 0.17), transparent 68%);
+  animation: bloomDriftB 32s ease-in-out infinite alternate;
+}
+@keyframes bloomDriftA {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(4vw, 3vh, 0) scale(1.08); }
+}
+@keyframes bloomDriftB {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(-3vw, -4vh, 0) scale(1.10); }
+}
+
+/* ---- frosted glass floating panels (accents for depth, not every element) ---- */
+.slide-hero .hero-stats,
+.slide-caps .cap-item,
+.slide-close .pillar,
+.slide-uc .uc-kpi {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* hero stat cluster — single floating glass bar */
+.slide-hero .hero-stats {
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: clamp(22px, 3vw, 34px) clamp(26px, 4vw, 56px);
+  border-radius: var(--radius-xl);
+}
+
+/* capabilities — glass tiles */
+.slide-caps .cap-item {
+  padding: clamp(18px, 2.4vw, 26px) clamp(12px, 1.6vw, 18px);
+  border-radius: var(--radius-lg);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.slide-caps .cap-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 28px 60px -28px rgba(58, 46, 120, 0.36), var(--glass-shadow);
+}
+
+/* closing pillars — glass tiles */
+.slide-close .pillar {
+  padding: clamp(20px, 2.6vw, 30px);
+  border-radius: var(--radius-lg);
+}
+
+/* use-case headline KPI — floating glass chip */
+.slide-uc .uc-kpi {
+  width: fit-content;
+  padding: clamp(16px, 2vw, 24px) clamp(22px, 2.6vw, 32px);
+  border-radius: var(--radius-lg);
+}
+
+/* phone simulator floats on the glass (soft ambient shadow beneath) */
+.deck .phone-shell {
+  box-shadow:
+    0 44px 90px -34px rgba(50, 40, 110, 0.48),
+    0 14px 34px -20px rgba(50, 40, 110, 0.32),
+    0 0 0 2px #2a3155 inset;
+}
+
+/* ---- nav arrows + bottom chrome: cohesive frosted-glass language ---- */
+.deck-arrow {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-sm);
+}
+.deck-arrow:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--glass-border));
+}
+.deck-dots {
+  padding: 8px 15px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  backdrop-filter: var(--glass-blur-sm);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow-sm);
+}
+
+/* ---- graceful fallback where backdrop-filter is unsupported ---- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .slide-hero .hero-stats,
+  .slide-caps .cap-item,
+  .slide-close .pillar,
+  .slide-uc .uc-kpi,
+  .deck-dots { background: rgba(255, 255, 255, 0.90); }
+  .deck-arrow { background: rgba(255, 255, 255, 0.94); }
+}
+
+/* =========================================================================
+   ENTRANCE STAGGER — content settles into place when a slide becomes active
+   Pure CSS, keyed off the existing .slide.active class (no JS involved).
+   ========================================================================= */
+@keyframes deckRise {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* hero */
+.slide-hero.active .slide-center > * {
+  animation: deckRise .58s cubic-bezier(.22, .61, .36, 1) both;
+}
+.slide-hero.active .slide-center > *:nth-child(1) { animation-delay: .06s; }
+.slide-hero.active .slide-center > *:nth-child(2) { animation-delay: .14s; }
+.slide-hero.active .slide-center > *:nth-child(3) { animation-delay: .22s; }
+.slide-hero.active .slide-center > *:nth-child(4) { animation-delay: .30s; }
+.slide-hero.active .slide-center > *:nth-child(5) { animation-delay: .38s; }
+
+/* capabilities — heading atoms, then per-tile stagger */
+.slide-caps.active .kicker,
+.slide-caps.active .slide-h2,
+.slide-caps.active .slide-sub,
+.slide-caps.active .cap-item {
+  animation: deckRise .52s cubic-bezier(.22, .61, .36, 1) both;
+}
+.slide-caps.active .kicker   { animation-delay: .06s; }
+.slide-caps.active .slide-h2 { animation-delay: .14s; }
+.slide-caps.active .slide-sub { animation-delay: .22s; }
+.slide-caps.active .cap-item:nth-child(1)  { animation-delay: .30s; }
+.slide-caps.active .cap-item:nth-child(2)  { animation-delay: .35s; }
+.slide-caps.active .cap-item:nth-child(3)  { animation-delay: .40s; }
+.slide-caps.active .cap-item:nth-child(4)  { animation-delay: .45s; }
+.slide-caps.active .cap-item:nth-child(5)  { animation-delay: .50s; }
+.slide-caps.active .cap-item:nth-child(6)  { animation-delay: .55s; }
+.slide-caps.active .cap-item:nth-child(7)  { animation-delay: .60s; }
+.slide-caps.active .cap-item:nth-child(8)  { animation-delay: .65s; }
+.slide-caps.active .cap-item:nth-child(9)  { animation-delay: .70s; }
+.slide-caps.active .cap-item:nth-child(10) { animation-delay: .75s; }
+
+/* use-case — copy atoms + phone dock */
+.slide-uc.active .uc-industry,
+.slide-uc.active .uc-title,
+.slide-uc.active .uc-problem,
+.slide-uc.active .uc-kpi,
+.slide-uc.active .uc-dock {
+  animation: deckRise .6s cubic-bezier(.22, .61, .36, 1) both;
+}
+.slide-uc.active .uc-industry { animation-delay: .10s; }
+.slide-uc.active .uc-title    { animation-delay: .18s; }
+.slide-uc.active .uc-problem  { animation-delay: .26s; }
+.slide-uc.active .uc-kpi      { animation-delay: .34s; }
+.slide-uc.active .uc-dock     { animation-delay: .18s; }
+
+/* closing — heading atoms, per-pillar stagger, then CTA */
+.slide-close.active .kicker,
+.slide-close.active .close-h2,
+.slide-close.active .pillar,
+.slide-close.active .close-cta {
+  animation: deckRise .55s cubic-bezier(.22, .61, .36, 1) both;
+}
+.slide-close.active .kicker   { animation-delay: .06s; }
+.slide-close.active .close-h2 { animation-delay: .14s; }
+.slide-close.active .pillar:nth-child(1) { animation-delay: .24s; }
+.slide-close.active .pillar:nth-child(2) { animation-delay: .30s; }
+.slide-close.active .pillar:nth-child(3) { animation-delay: .36s; }
+.slide-close.active .pillar:nth-child(4) { animation-delay: .42s; }
+.slide-close.active .close-cta { animation-delay: .52s; }
+
+/* centre KPI panel on stacked mobile layout */
+@media (max-width: 960px) {
+  .slide-uc .uc-kpi { margin-left: auto; margin-right: auto; }
+}
+
+/* respect reduced-motion: no drift, no stagger — content shown immediately */
+@media (prefers-reduced-motion: reduce) {
+  .deck::before,
+  .deck::after { animation: none !important; }
+  .slide-hero.active .slide-center > *,
+  .slide-caps.active .kicker,
+  .slide-caps.active .slide-h2,
+  .slide-caps.active .slide-sub,
+  .slide-caps.active .cap-item,
+  .slide-uc.active .uc-industry,
+  .slide-uc.active .uc-title,
+  .slide-uc.active .uc-problem,
+  .slide-uc.active .uc-kpi,
+  .slide-uc.active .uc-dock,
+  .slide-close.active .kicker,
+  .slide-close.active .close-h2,
+  .slide-close.active .pillar,
+  .slide-close.active .close-cta {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
