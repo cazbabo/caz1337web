@@ -37,13 +37,33 @@
 
   const industryById = (id) => INDUSTRIES.find((i) => i.id === id);
 
+  /* ---------- KPI value formatting ----------
+   * splitKpi("15-25% (จาก SMS 2-5%)") -> { primary:"15–25%", secondary:"จาก SMS 2–5%" }
+   * - converts hyphens between digits to en-dashes (15-25 -> 15–25)
+   * - peels a trailing parenthetical off as the small muted qualifier
+   */
+  function enDashRanges(str) {
+    return String(str).replace(/(\d)\s*-\s*(\d)/g, '$1–$2');
+  }
+  function splitKpi(raw) {
+    const value = enDashRanges(raw).trim();
+    const m = value.match(/^([^()（）]*?)\s*[\(（]\s*(.+?)\s*[\)）]\s*$/);
+    if (m && m[1].trim() && m[2].trim()) {
+      return { primary: m[1].trim(), secondary: m[2].trim() };
+    }
+    return { primary: value, secondary: '' };
+  }
+  // true when the primary is a bare numeric token (SF Pro digits) — safe to tighten tracking
+  function isNumericToken(str) {
+    return /\d/.test(str) && /^[\s\d.,%+\-–±<>~/x]+$/i.test(str);
+  }
+
   /* ---------------- slide builders ---------------- */
 
   function buildHeroSlide() {
     const stats = [
-      { value: '25%', label: 'RCS Click-through Rate เทียบกับ SMS เพียง 2–5%' },
+      { value: '25% (เทียบกับ SMS 2-5%)', label: 'RCS Click-through Rate' },
       { value: String(USECASES.length), label: 'Use Case สาธิตได้จริงในเครื่องเดียว' },
-      { value: String(INDUSTRIES.length), label: 'อุตสาหกรรมหลักพร้อมโชว์ลูกค้า' },
     ];
     return h('section', { class: 'slide slide-hero', 'data-kind': 'hero', 'aria-label': 'หน้าเปิด' },
       h('div', { class: 'slide-center' },
@@ -53,10 +73,25 @@
           'แชนแนลเดียวที่รวม Rich Card, Carousel, AI และ Verified Sender ' +
           'ไว้ในแอป Messages ที่ลูกค้ามีอยู่แล้ว — ไม่ต้องลงแอปเพิ่ม'),
         h('div', { class: 'hero-stats' },
-          stats.map((s) => h('div', { class: 'hero-stat' },
-            h('div', { class: 'hero-stat-value' }, s.value),
-            h('div', { class: 'hero-stat-label' }, s.label)
-          ))
+          stats.map((s) => {
+            const { primary, secondary } = splitKpi(s.value);
+            return h('div', { class: 'hero-stat' },
+              h('div', { class: 'hero-stat-value' + (isNumericToken(primary) ? ' is-num' : '') },
+                primary,
+                secondary ? h('span', { class: 'hero-stat-qual' }, secondary) : null
+              ),
+              h('div', { class: 'hero-stat-label' }, s.label)
+            );
+          })
+        ),
+        h('div', { class: 'hero-industries', role: 'group', 'aria-label': 'อุตสาหกรรมที่รองรับ' },
+          h('div', { class: 'hero-ind-cap' }, `${INDUSTRIES.length} อุตสาหกรรมพร้อมสาธิต`),
+          h('div', { class: 'hero-ind-row' },
+            INDUSTRIES.map((ind) => h('div', { class: 'hero-ind' },
+              h('span', { class: 'hero-ind-icon', 'aria-hidden': 'true' }, ind.icon),
+              h('span', { class: 'hero-ind-label' }, ind.labelTh)
+            ))
+          )
         ),
         h('p', { class: 'hero-hint', html:
           'กด <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> หรือปุ่มลูกศรบนหน้าจอเพื่อเลื่อนสไลด์' })
@@ -99,10 +134,14 @@
           ),
           h('h2', { class: 'uc-title' }, uc.title),
           h('p', { class: 'uc-problem' }, uc.problem),
-          h('div', { class: 'uc-kpi' },
-            h('div', { class: 'uc-kpi-value' }, kpi.value),
-            h('div', { class: 'uc-kpi-label' }, kpi.label)
-          )
+          (function () {
+            const { primary, secondary } = splitKpi(kpi.value);
+            return h('div', { class: 'uc-kpi' },
+              h('div', { class: 'uc-kpi-value' + (isNumericToken(primary) ? ' is-num' : '') }, primary),
+              secondary ? h('div', { class: 'uc-kpi-qual' }, secondary) : null,
+              h('div', { class: 'uc-kpi-label' }, kpi.label)
+            );
+          })()
         ),
         h('div', { class: 'uc-dock', 'data-dock': uc.id })
       )
