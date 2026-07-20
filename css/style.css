@@ -341,13 +341,16 @@ h1, h2, h3, p { margin: 0; }
 .chat-header-dots { color: var(--text-faint); font-weight: 800; padding: 0 4px; }
 
 .verified-badge {
-  width: 14px; height: 14px; border-radius: 50%;
-  background: var(--accent-2); flex-shrink: 0; position: relative;
+  width: 19px; height: 19px; border-radius: 50%;
+  background: linear-gradient(145deg, #3ab6ff, #1d84f0);
+  flex-shrink: 0; position: relative;
+  box-shadow: 0 0 0 2px #fff, 0 1px 4px rgba(29, 132, 240, 0.55);
 }
 .verified-badge::after {
-  content: ''; position: absolute; left: 3.5px; top: 2px; width: 5px; height: 8px;
-  border-right: 2px solid #05060a; border-bottom: 2px solid #05060a;
-  transform: rotate(40deg);
+  content: ''; position: absolute; left: 6px; top: 4px; width: 5px; height: 9px;
+  border-right: 2.4px solid #fff; border-bottom: 2.4px solid #fff;
+  border-radius: 1px;
+  transform: rotate(42deg);
 }
 
 .chat-feed {
