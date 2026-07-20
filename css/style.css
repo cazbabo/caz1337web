@@ -264,27 +264,60 @@ h1, h2, h3, p { margin: 0; }
 
 /* ---------------- phone shell ---------------- */
 .phone-shell {
-  width: 340px; max-width: 100%;
-  background: linear-gradient(160deg, #1b2035, #0c0f1a);
-  border-radius: var(--radius-xl);
-  padding: 14px 12px 20px;
-  box-shadow: var(--shadow-lg), 0 0 0 2px #2a3155 inset;
+  width: 336px; max-width: 100%;
+  border-radius: 54px;
+  padding: 12px;
+  background:
+    linear-gradient(148deg, #262933 0%, #0e0f14 20%, #060709 50%, #0e0f14 80%, #2d3039 100%);
+  box-shadow:
+    0 44px 74px -30px rgba(40, 34, 96, 0.48),
+    0 18px 38px -18px rgba(20, 24, 46, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.10),
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 0 0 2px rgba(0, 0, 0, 0.55) inset;
   position: relative;
 }
-.phone-notch {
-  width: 120px; height: 22px; background: #05060a; border-radius: 0 0 16px 16px;
-  margin: 0 auto 8px;
+/* side buttons */
+.phone-shell::before {   /* left volume rocker */
+  content: ''; position: absolute; left: -2px; top: 128px;
+  width: 2px; height: 94px; border-radius: 2px 0 0 2px;
+  background: linear-gradient(180deg, #383b45, #101219);
 }
-.phone-home-bar { width: 120px; height: 4px; background: #333c5c; border-radius: 4px; margin: 14px auto 0; }
+.phone-shell::after {    /* right power button */
+  content: ''; position: absolute; right: -2px; top: 150px;
+  width: 2px; height: 68px; border-radius: 0 2px 2px 0;
+  background: linear-gradient(180deg, #383b45, #101219);
+}
+/* dynamic island — floats over the app header */
+.phone-notch {
+  position: absolute; z-index: 6;
+  top: 25px; left: 50%; transform: translateX(-50%);
+  width: 100px; height: 27px; border-radius: 999px;
+  background: #000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+.phone-notch::after {    /* camera lens */
+  content: ''; position: absolute; top: 50%; right: 13px; transform: translateY(-50%);
+  width: 8px; height: 8px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #2b527a 0%, #0a1622 55%, #000 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.phone-home-bar {
+  width: 108px; height: 5px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  margin: 11px auto 3px;
+}
 
 .phone-screen {
   background: var(--bg);
-  border-radius: 26px;
+  border-radius: 42px;
   overflow: hidden;
   display: flex; flex-direction: column;
   height: 560px;
-  border: 1px solid #0006;
+  box-shadow: 0 0 0 2px #000;
 }
+/* clear the dynamic island so app content starts below it */
+.phone-screen .chat-header { padding-top: 40px; }
 
 .chat-header {
   --brand-color: #7c5cff;
