@@ -1,26 +1,29 @@
 /**
- * app.js — gallery, filters, navigation, business-value panel
+ * app.js — full-screen slide-deck controller (Apple/Keynote style)
  * -----------------------------------------------------------------------
- * เชื่อม usecases.js (data) เข้ากับ simulator.js (engine) และจัดการ UI
- * ส่วนที่เหลือทั้งหมดของหน้าเว็บ (hero, capability chips, gallery, filter,
- * business value panel, mobile nav)
+ * สร้างสไลด์ทั้งหมดจากข้อมูลใน usecases.js แล้วผูกเข้ากับ engine ใน simulator.js
+ *
+ * ลำดับสไลด์:
+ *   0  Hero
+ *   1  Capabilities (RCS ทำอะไรได้บ้าง)
+ *   2–11  10 use case (จัดกลุ่มตามอุตสาหกรรม ตามลำดับใน USECASES)
+ *   12  Closing / value pillars
+ *
+ * มี Phone Simulator เพียงตัวเดียว (singleton) ที่ถูกย้าย DOM เข้าไปใน
+ * use-case slide ที่กำลัง active แล้ว load() flow ของ use case นั้น (reset ทุกครั้ง)
  */
 
 (function () {
   'use strict';
 
-  const state = {
-    currentUsecaseId: USECASES[0].id,
-    activeIndustries: new Set(),
-    activeCapabilities: new Set(),
-  };
-
+  /* ---------- tiny DOM helper (no deps) ---------- */
   function h(tag, attrs, ...children) {
     const e = document.createElement(tag);
     attrs = attrs || {};
     for (const [k, v] of Object.entries(attrs)) {
       if (v === undefined || v === null) continue;
       if (k === 'class') e.className = v;
+      else if (k === 'html') e.innerHTML = v;
       else if (k === 'text') e.textContent = v;
       else if (k.startsWith('on') && typeof v === 'function') e.addEventListener(k.slice(2), v);
       else e.setAttribute(k, v);
@@ -32,235 +35,232 @@
     return e;
   }
 
-  /* ---------------- capability chips (section 3.2) ---------------- */
-  function renderCapabilityChips() {
-    const wrap = document.getElementById('capabilityChips');
-    if (!wrap) return;
-    wrap.innerHTML = '';
-    CAPABILITIES.forEach((cap) => {
-      wrap.appendChild(
-        h('div', { class: 'capability-chip' },
-          h('span', { class: 'capability-chip-icon', 'aria-hidden': 'true' }, cap.icon),
-          h('span', {}, cap.label)
-        )
-      );
-    });
-  }
+  const industryById = (id) => INDUSTRIES.find((i) => i.id === id);
 
-  /* ---------------- gallery filters ---------------- */
-  function renderFilters() {
-    const indWrap = document.getElementById('industryFilters');
-    const capWrap = document.getElementById('capabilityFilters');
-    if (indWrap) {
-      indWrap.innerHTML = '';
-      indWrap.appendChild(makeFilterChip('ทั้งหมด', null, 'industry', true));
-      INDUSTRIES.forEach((ind) => {
-        indWrap.appendChild(makeFilterChip(`${ind.icon} ${ind.labelTh}`, ind.id, 'industry'));
-      });
-    }
-    if (capWrap) {
-      capWrap.innerHTML = '';
-      capWrap.appendChild(makeFilterChip('ทั้งหมด', null, 'capability', true));
-      CAPABILITIES.forEach((cap) => {
-        capWrap.appendChild(makeFilterChip(`${cap.icon} ${cap.label}`, cap.id, 'capability'));
-      });
-    }
-  }
+  /* ---------------- slide builders ---------------- */
 
-  function makeFilterChip(label, value, group, isAll) {
-    const set = group === 'industry' ? state.activeIndustries : state.activeCapabilities;
-    const btn = h('button', { class: 'chip chip-filter', type: 'button' }, label);
-    const sync = () => {
-      const active = isAll ? set.size === 0 : set.has(value);
-      btn.classList.toggle('active', active);
-    };
-    btn.addEventListener('click', () => {
-      if (isAll) {
-        set.clear();
-      } else {
-        set.has(value) ? set.delete(value) : set.add(value);
-      }
-      // re-sync every chip in this group
-      const wrap = group === 'industry' ? document.getElementById('industryFilters') : document.getElementById('capabilityFilters');
-      wrap.querySelectorAll('.chip-filter').forEach((c) => c._sync && c._sync());
-      renderGallery();
-    });
-    btn._sync = sync;
-    sync();
-    return btn;
-  }
-
-  function matchesFilter(uc) {
-    const indOk = state.activeIndustries.size === 0 || state.activeIndustries.has(uc.industry);
-    const capOk = state.activeCapabilities.size === 0 || uc.capabilities.some((c) => state.activeCapabilities.has(c));
-    return indOk && capOk;
-  }
-
-  /* ---------------- gallery cards ---------------- */
-  function renderGallery() {
-    const grid = document.getElementById('galleryGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    const filtered = USECASES.filter(matchesFilter);
-
-    if (!filtered.length) {
-      grid.appendChild(h('div', { class: 'gallery-empty' }, 'ไม่พบ use case ที่ตรงกับตัวกรอง ลองเลือกใหม่ดูนะครับ'));
-      return;
-    }
-
-    filtered.forEach((uc) => {
-      const ind = INDUSTRIES.find((i) => i.id === uc.industry);
-      const topKpi = uc.kpis[0];
-      const card = h('div', { class: 'usecase-card', 'data-uc': uc.id },
-        h('div', { class: 'usecase-card-top' },
-          h('span', { class: 'industry-badge' }, `${ind.icon} ${ind.labelTh}`),
-          h('span', { class: 'usecase-brand' }, uc.brand.icon + ' ' + uc.brand.name)
+  function buildHeroSlide() {
+    const stats = [
+      { value: '25%', label: 'RCS Click-through Rate เทียบกับ SMS เพียง 2–5%' },
+      { value: String(USECASES.length), label: 'Use Case สาธิตได้จริงในเครื่องเดียว' },
+      { value: String(INDUSTRIES.length), label: 'อุตสาหกรรมหลักพร้อมโชว์ลูกค้า' },
+    ];
+    return h('section', { class: 'slide slide-hero', 'data-kind': 'hero', 'aria-label': 'หน้าเปิด' },
+      h('div', { class: 'slide-center' },
+        h('p', { class: 'kicker' }, 'RCS Business Messaging'),
+        h('h1', { class: 'hero-h1' }, 'SMS ที่วิวัฒนาการแล้ว'),
+        h('p', { class: 'hero-lead' },
+          'แชนแนลเดียวที่รวม Rich Card, Carousel, AI และ Verified Sender ' +
+          'ไว้ในแอป Messages ที่ลูกค้ามีอยู่แล้ว — ไม่ต้องลงแอปเพิ่ม'),
+        h('div', { class: 'hero-stats' },
+          stats.map((s) => h('div', { class: 'hero-stat' },
+            h('div', { class: 'hero-stat-value' }, s.value),
+            h('div', { class: 'hero-stat-label' }, s.label)
+          ))
         ),
-        h('h3', { class: 'usecase-title' }, uc.title),
-        h('p', { class: 'usecase-problem' }, uc.problem),
-        h('div', { class: 'usecase-kpi' },
-          h('span', { class: 'usecase-kpi-value' }, topKpi.value),
-          h('span', { class: 'usecase-kpi-label' }, topKpi.label)
-        ),
-        h('div', { class: 'usecase-caps' },
-          uc.capabilities.slice(0, 4).map((capId) => {
-            const cap = CAPABILITIES.find((c) => c.id === capId);
-            return cap ? h('span', { class: 'mini-chip', title: cap.label }, cap.icon) : null;
-          })
-        ),
-        h('button', { class: 'btn btn-primary btn-block', type: 'button', onclick: () => selectUsecase(uc.id, { scroll: true }) },
-          'ลองเล่น Demo ▸'
-        )
-      );
-      grid.appendChild(card);
-    });
-  }
-
-  function syncGalleryActiveState() {
-    document.querySelectorAll('.usecase-card').forEach((card) => {
-      card.classList.toggle('active', card.dataset.uc === state.currentUsecaseId);
-    });
-  }
-
-  /* ---------------- business value panel (section 3.5) ---------------- */
-  function renderBusinessValue(usecaseId) {
-    const uc = USECASES.find((u) => u.id === usecaseId);
-    const panel = document.getElementById('businessValue');
-    if (!uc || !panel) return;
-    const ind = INDUSTRIES.find((i) => i.id === uc.industry);
-
-    panel.innerHTML = '';
-    panel.appendChild(
-      h('div', { class: 'bv-header' },
-        h('span', { class: 'industry-badge' }, `${ind.icon} ${ind.labelTh}`),
-        h('h3', {}, uc.title),
+        h('p', { class: 'hero-hint', html:
+          'กด <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> หรือปุ่มลูกศรบนหน้าจอเพื่อเลื่อนสไลด์' })
       )
     );
-    panel.appendChild(
-      h('div', { class: 'bv-grid' },
-        h('div', { class: 'bv-block bv-problem' },
-          h('div', { class: 'bv-block-label' }, '❌ ปัญหาเดิม'),
-          h('p', {}, uc.problem)
-        ),
-        h('div', { class: 'bv-block bv-solution' },
-          h('div', { class: 'bv-block-label' }, '✅ RCS แก้อย่างไร'),
-          h('p', {}, uc.solution)
-        )
-      )
-    );
-    panel.appendChild(
-      h('div', { class: 'bv-kpis' },
-        h('div', { class: 'bv-block-label' }, '📈 KPI ที่คาดหวัง'),
-        h('div', { class: 'bv-kpi-row' },
-          uc.kpis.map((k) => h('div', { class: 'bv-kpi-tile' },
-            h('span', { class: 'bv-kpi-value' }, k.value),
-            h('span', { class: 'bv-kpi-label' }, k.label)
+  }
+
+  function buildCapabilitiesSlide() {
+    return h('section', { class: 'slide slide-caps', 'data-kind': 'caps', 'aria-label': 'ความสามารถของ RCS' },
+      h('div', { class: 'slide-center wide' },
+        h('p', { class: 'kicker' }, 'How RCS Works'),
+        h('h2', { class: 'slide-h2' }, 'RCS ทำอะไรได้บ้าง'),
+        h('p', { class: 'slide-sub' },
+          'องค์ประกอบเหล่านี้คือสิ่งที่ทำให้ RCS ต่างจาก SMS ธรรมดา และเป็นวัตถุดิบของทุก use case ในเด็คนี้'),
+        h('div', { class: 'cap-list' },
+          CAPABILITIES.map((cap) => h('div', { class: 'cap-item' },
+            h('div', { class: 'cap-item-icon', 'aria-hidden': 'true' }, cap.icon),
+            h('div', { class: 'cap-item-label' }, cap.label)
           ))
         )
       )
     );
-    panel.appendChild(
-      h('div', { class: 'bv-integrations' },
-        h('div', { class: 'bv-block-label' }, '🔧 ข้อมูล/ระบบที่ลูกค้าต้องมี'),
-        h('ul', { class: 'bv-integration-list' },
-          uc.integrations.map((i) => h('li', {}, i))
-        )
+  }
+
+  function buildUsecaseSlide(uc) {
+    const ind = industryById(uc.industry);
+    const kpi = uc.kpis[0]; // headline KPI (ตัวแรกคือตัวชูโรงของแต่ละ use case)
+    return h('section', {
+      class: 'slide slide-uc',
+      'data-kind': 'usecase',
+      'data-uc': uc.id,
+      'data-industry': uc.industry,
+      'aria-label': `Use case: ${uc.title}`,
+    },
+      h('div', { class: 'uc-inner' },
+        h('div', { class: 'uc-copy' },
+          h('p', { class: 'uc-industry' },
+            h('span', { class: 'uc-industry-icon', 'aria-hidden': 'true' }, ind.icon),
+            `${ind.label} · ${ind.labelTh}`
+          ),
+          h('h2', { class: 'uc-title' }, uc.title),
+          h('p', { class: 'uc-problem' }, uc.problem),
+          h('div', { class: 'uc-kpi' },
+            h('div', { class: 'uc-kpi-value' }, kpi.value),
+            h('div', { class: 'uc-kpi-label' }, kpi.label)
+          )
+        ),
+        h('div', { class: 'uc-dock', 'data-dock': uc.id })
       )
     );
   }
 
-  /* ---------------- cross-section selection ---------------- */
-  function selectUsecase(id, opts) {
-    opts = opts || {};
-    state.currentUsecaseId = id;
-    window.Simulator.load(id);
-    renderBusinessValue(id);
-    syncGalleryActiveState();
-    if (opts.scroll) {
-      const target = document.getElementById('simulator');
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  function buildClosingSlide() {
+    const pillars = [
+      { word: 'Verified', desc: 'แบรนด์ยืนยันตัวตนพร้อมโลโก้ ลด phishing และสร้างความเชื่อมั่นตั้งแต่ข้อความแรก' },
+      { word: 'Interactive', desc: 'Rich Card, Carousel, ปุ่ม Suggested Action ให้ลูกค้าตัดสินใจและจบงานในแชทเดียว' },
+      { word: 'Native', desc: 'ทำงานบนแอป Messages ที่มีอยู่แล้ว ไม่ต้องดาวน์โหลดหรือติดตั้งแอปเพิ่ม' },
+      { word: 'Measurable', desc: 'CTR และ conversion สูงกว่า SMS หลายเท่า วัดผลได้จริงทุกแคมเปญ' },
+    ];
+    return h('section', { class: 'slide slide-close', 'data-kind': 'close', 'aria-label': 'สรุปคุณค่า' },
+      h('div', { class: 'slide-center wide' },
+        h('p', { class: 'kicker' }, 'ทำไมต้อง RCS'),
+        h('h2', { class: 'close-h2' }, 'ช่องทางเดียว ปิดงานได้จริง'),
+        h('div', { class: 'pillars' },
+          pillars.map((p) => h('div', { class: 'pillar' },
+            h('div', { class: 'pillar-word' }, p.word),
+            h('div', { class: 'pillar-desc' }, p.desc)
+          ))
+        ),
+        h('p', { class: 'close-cta' }, 'พร้อมนำ RCS ไปสร้างประสบการณ์ให้ลูกค้าของคุณแล้ววันนี้')
+      )
+    );
   }
 
-  /* ---------------- nav / mobile menu ---------------- */
-  function setupNav() {
-    const toggle = document.getElementById('navToggle');
-    const menu = document.getElementById('navMenu');
-    if (toggle && menu) {
-      toggle.addEventListener('click', () => {
-        menu.classList.toggle('open');
-        toggle.classList.toggle('open');
+  /* ---------------- deck controller ---------------- */
+  const Deck = {
+    el: null,
+    slides: [],
+    dotsEl: null,
+    counterEl: null,
+    prevBtn: null,
+    nextBtn: null,
+    simRoot: null,
+    current: 0,
+
+    build() {
+      this.el = document.getElementById('deck');
+      this.dotsEl = document.getElementById('deckDots');
+      this.counterEl = document.getElementById('deckCounter');
+      this.prevBtn = document.getElementById('deckPrev');
+      this.nextBtn = document.getElementById('deckNext');
+      this.simRoot = document.getElementById('simulatorRoot');
+
+      // build slides
+      this.el.appendChild(buildHeroSlide());
+      this.el.appendChild(buildCapabilitiesSlide());
+      USECASES.forEach((uc) => this.el.appendChild(buildUsecaseSlide(uc)));
+      this.el.appendChild(buildClosingSlide());
+      this.slides = Array.prototype.slice.call(this.el.querySelectorAll('.slide'));
+
+      // init single simulator engine (no per-phone use-case dropdown — slides drive it)
+      window.Simulator.init(this.simRoot, { hideSelect: true });
+
+      this.buildDots();
+      this.wireControls();
+      this.go(0, true);
+    },
+
+    buildDots() {
+      this.dotsEl.innerHTML = '';
+      this.slides.forEach((slide, i) => {
+        const prev = this.slides[i - 1];
+        const isSectionStart =
+          slide.dataset.industry &&
+          (!prev || prev.dataset.industry !== slide.dataset.industry);
+        const dot = h('button', {
+          class: 'deck-dot' + (isSectionStart ? ' section-start' : ''),
+          type: 'button',
+          role: 'tab',
+          'aria-label': `ไปสไลด์ ${i + 1}`,
+          onclick: () => { this.go(i); dot.blur(); },
+        });
+        this.dotsEl.appendChild(dot);
       });
-      menu.querySelectorAll('a').forEach((a) =>
-        a.addEventListener('click', () => {
-          menu.classList.remove('open');
-          toggle.classList.remove('open');
-        })
-      );
-    }
-  }
+    },
 
-  /* ---------------- hero stat count-up ---------------- */
-  function setupStatCountUp() {
-    const tiles = document.querySelectorAll('.stat-tile [data-count-to]');
-    if (!tiles.length) return;
-    const animate = (el) => {
-      const to = parseFloat(el.dataset.countTo);
-      const suffix = el.dataset.suffix || '';
-      const decimals = el.dataset.countTo.includes('.') ? 1 : 0;
-      const duration = 900;
-      const start = performance.now();
-      function tick(now) {
-        const p = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - p, 3);
-        el.textContent = (to * eased).toFixed(decimals) + suffix;
-        if (p < 1) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-    };
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          animate(entry.target);
-          io.unobserve(entry.target);
+    wireControls() {
+      this.prevBtn.addEventListener('click', () => { this.prev(); this.prevBtn.blur(); });
+      this.nextBtn.addEventListener('click', () => { this.next(); this.nextBtn.blur(); });
+
+      document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (key === 'ArrowRight' || key === 'PageDown') {
+          e.preventDefault(); this.next();
+        } else if (key === 'ArrowLeft' || key === 'PageUp') {
+          e.preventDefault(); this.prev();
+        } else if (key === ' ' || key === 'Spacebar') {
+          // don't hijack Space while a button (e.g. a chat chip) is focused
+          if (document.activeElement && document.activeElement.tagName === 'BUTTON') return;
+          e.preventDefault(); this.next();
+        } else if (key === 'Home') {
+          e.preventDefault(); this.go(0);
+        } else if (key === 'End') {
+          e.preventDefault(); this.go(this.slides.length - 1);
         }
       });
-    }, { threshold: 0.4 });
-    tiles.forEach((t) => io.observe(t));
-  }
 
-  /* ---------------- boot ---------------- */
+      // lightweight swipe (ignored when the gesture starts on the phone mockup)
+      let sx = null, sy = null;
+      this.el.addEventListener('touchstart', (e) => {
+        if (e.target.closest && e.target.closest('.phone-shell')) { sx = null; return; }
+        sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+      }, { passive: true });
+      this.el.addEventListener('touchend', (e) => {
+        if (sx === null) return;
+        const dx = e.changedTouches[0].clientX - sx;
+        const dy = e.changedTouches[0].clientY - sy;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          dx < 0 ? this.next() : this.prev();
+        }
+        sx = null;
+      }, { passive: true });
+    },
+
+    next() { this.go(this.current + 1); },
+    prev() { this.go(this.current - 1); },
+
+    go(index, force) {
+      index = Math.max(0, Math.min(this.slides.length - 1, index));
+      if (!force && index === this.current) return;
+
+      this.slides[this.current].classList.remove('active');
+      this.slides[index].classList.add('active');
+      this.current = index;
+
+      this.onEnter(this.slides[index]);
+      this.updateChrome();
+    },
+
+    onEnter(slide) {
+      if (slide.dataset.uc) {
+        const dock = slide.querySelector('.uc-dock');
+        // move the single simulator into this slide, then (re)load its flow -> resets conversation
+        if (this.simRoot.parentElement !== dock) dock.appendChild(this.simRoot);
+        window.Simulator.load(slide.dataset.uc);
+      }
+    },
+
+    updateChrome() {
+      const total = this.slides.length;
+      this.counterEl.textContent = `${this.current + 1} / ${total}`;
+      Array.prototype.forEach.call(this.dotsEl.children, (dot, i) => {
+        const active = i === this.current;
+        dot.classList.toggle('active', active);
+        if (active) dot.setAttribute('aria-selected', 'true');
+        else dot.removeAttribute('aria-selected');
+      });
+      this.prevBtn.disabled = this.current === 0;
+      this.nextBtn.disabled = this.current === total - 1;
+    },
+  };
+
   function init() {
-    renderCapabilityChips();
-    renderFilters();
-    renderGallery();
-    window.Simulator.init(document.getElementById('simulatorRoot'), { onSwitch: (id) => selectUsecase(id) });
-    selectUsecase(state.currentUsecaseId);
-    setupNav();
-    setupStatCountUp();
-
-    const yearEl = document.getElementById('footerYear');
-    if (yearEl) yearEl.textContent = new Date().getFullYear() + 543; // พ.ศ.
+    Deck.build();
   }
 
   if (document.readyState === 'loading') {

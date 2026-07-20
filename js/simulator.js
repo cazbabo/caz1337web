@@ -86,18 +86,20 @@
     init(rootEl, opts) {
       this.root = rootEl;
       this.onSwitch = (opts && opts.onSwitch) || null;
+      const hideSelect = !!(opts && opts.hideSelect);
+      this.selectEl = null;
       this.root.innerHTML = '';
 
       const controls = h(
         'div', { class: 'sim-controls' },
-        h('label', { class: 'sim-select-label' },
+        hideSelect ? null : h('label', { class: 'sim-select-label' },
           'เลือก Use Case:',
           (this.selectEl = h('select', { class: 'sim-select', onchange: () => {
             if (this.onSwitch) this.onSwitch(this.selectEl.value);
           } }))
         ),
         h('button', { class: 'btn btn-ghost sim-reset', onclick: () => this.reset(), type: 'button' },
-          h('span', { class: 'reset-icon', 'aria-hidden': 'true' }, '↺'), ' Reset'
+          h('span', { class: 'reset-icon', 'aria-hidden': 'true' }, '↺'), ' เล่นใหม่'
         )
       );
 
@@ -128,6 +130,7 @@
     },
 
     populateSelect() {
+      if (!this.selectEl) return;
       this.selectEl.innerHTML = '';
       USECASES.forEach((uc) => {
         const ind = INDUSTRIES.find((i) => i.id === uc.industry);
@@ -140,7 +143,7 @@
     load(usecaseId) {
       const uc = USECASES.find((u) => u.id === usecaseId) || USECASES[0];
       this.usecase = uc;
-      this.selectEl.value = uc.id;
+      if (this.selectEl) this.selectEl.value = uc.id;
       this.buildNodeMap();
       this.renderHeader();
       this.reset();

@@ -4,128 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>RCS Use Case Showcase — SMS ที่วิวัฒนาการแล้ว</title>
-<meta name="description" content="เว็บไซต์รวม RCS Business Messaging use case แบบ interactive พร้อม Phone Simulator เล่นบทสนทนาได้จริง สำหรับทีม presale">
+<meta name="description" content="RCS Business Messaging use case แบบ interactive slide deck พร้อม Phone Simulator เล่นบทสนทนาได้จริง สำหรับทีม presale">
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="deck-mode">
 
-<a class="skip-link" href="#main">ข้ามไปเนื้อหาหลัก</a>
+<a class="skip-link" href="#deck">ข้ามไปเนื้อหาหลัก</a>
 
-<header class="site-header">
-  <div class="container header-inner">
-    <a class="brand-logo" href="#top">
-      <span class="brand-logo-mark" aria-hidden="true">💬</span>
-      <span class="brand-logo-text">RCS<span>Showcase</span></span>
-    </a>
-    <button id="navToggle" class="nav-toggle" type="button" aria-label="เปิดเมนู" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-    <nav id="navMenu" class="nav-menu">
-      <a href="#capabilities">Capabilities</a>
-      <a href="#gallery">Use Cases</a>
-      <a href="#simulator">Phone Simulator</a>
-    </nav>
-  </div>
-</header>
+<main id="deck" class="deck" aria-label="RCS Use Case Presentation" aria-roledescription="สไลด์นำเสนอ"></main>
 
-<main id="main">
+<button id="deckPrev" class="deck-arrow deck-arrow-left" type="button" aria-label="สไลด์ก่อนหน้า">&#8249;</button>
+<button id="deckNext" class="deck-arrow deck-arrow-right" type="button" aria-label="สไลด์ถัดไป">&#8250;</button>
 
-  <!-- ================= HERO ================= -->
-  <section id="top" class="hero">
-    <div class="hero-bg" aria-hidden="true"></div>
-    <div class="container hero-inner">
-      <p class="eyebrow">RCS Business Messaging</p>
-      <h1 class="hero-title">SMS ที่วิวัฒนาการแล้ว</h1>
-      <p class="hero-desc">
-        แชนแนลเดียวที่รวม Rich Card, Carousel, AI Chatbot และ Verified Sender
-        ไว้ในแอป Messages ที่ลูกค้ามีอยู่แล้ว — ไม่ต้องลงแอปเพิ่ม
-      </p>
-      <div class="hero-cta">
-        <a href="#gallery" class="btn btn-primary btn-lg">ดู Use Case ทั้งหมด ▸</a>
-        <a href="#simulator" class="btn btn-ghost btn-lg">เปิด Phone Simulator</a>
-      </div>
+<div class="deck-chrome">
+  <div id="deckDots" class="deck-dots" role="tablist" aria-label="เลือกสไลด์"></div>
+  <div id="deckCounter" class="deck-counter" aria-live="polite"></div>
+</div>
 
-      <div class="stat-tiles">
-        <div class="stat-tile">
-          <div class="stat-value"><span data-count-to="25" data-suffix="%">0%</span></div>
-          <div class="stat-label">RCS Click-through Rate<br><span class="stat-sub">เทียบกับ SMS 2–5%</span></div>
-        </div>
-        <div class="stat-tile">
-          <div class="stat-value"><span data-count-to="100" data-suffix="%">0%</span></div>
-          <div class="stat-label">Verified Sender<br><span class="stat-sub">ลดความเสี่ยง phishing</span></div>
-        </div>
-        <div class="stat-tile">
-          <div class="stat-value"><span data-count-to="0" data-suffix="">0</span> แอป</div>
-          <div class="stat-label">ต้องติดตั้งเพิ่ม<br><span class="stat-sub">ใช้แอป Messages เดิม</span></div>
-        </div>
-        <div class="stat-tile">
-          <div class="stat-value"><span data-count-to="10" data-suffix="+">0+</span></div>
-          <div class="stat-label">Use Case พร้อมโชว์ลูกค้า<br><span class="stat-sub">5 อุตสาหกรรม</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================= CAPABILITY CHIPS ================= -->
-  <section id="capabilities" class="section capabilities-section">
-    <div class="container">
-      <p class="section-eyebrow">RCS ทำอะไรได้บ้าง</p>
-      <h2 class="section-title">ความสามารถของ RCS Channel</h2>
-      <p class="section-desc">องค์ประกอบเหล่านี้คือสิ่งที่ทำให้ RCS ต่างจาก SMS ธรรมดา และเป็นสิ่งที่ใช้ประกอบ use case ทุกตัวในหน้านี้</p>
-      <div id="capabilityChips" class="capability-chip-grid"></div>
-    </div>
-  </section>
-
-  <!-- ================= GALLERY ================= -->
-  <section id="gallery" class="section gallery-section">
-    <div class="container">
-      <p class="section-eyebrow">Use Case Gallery</p>
-      <h2 class="section-title">เลือก Use Case ที่ใกล้เคียงลูกค้าคุณ</h2>
-      <p class="section-desc">กรองตามอุตสาหกรรมหรือความสามารถของ RCS ที่อยากโชว์ แล้วกด "ลองเล่น Demo" เพื่อเปิด Phone Simulator</p>
-
-      <div class="filters">
-        <div class="filter-group">
-          <span class="filter-group-label">อุตสาหกรรม</span>
-          <div id="industryFilters" class="filter-chip-row"></div>
-        </div>
-        <div class="filter-group">
-          <span class="filter-group-label">Capability</span>
-          <div id="capabilityFilters" class="filter-chip-row"></div>
-        </div>
-      </div>
-
-      <div id="galleryGrid" class="gallery-grid"></div>
-    </div>
-  </section>
-
-  <!-- ================= SIMULATOR ================= -->
-  <section id="simulator" class="section simulator-section">
-    <div class="container simulator-container">
-      <div class="simulator-intro">
-        <p class="section-eyebrow">จุด Wow ของ Demo</p>
-        <h2 class="section-title">RCS Phone Simulator</h2>
-        <p class="section-desc">
-          กด Suggested Reply / Suggested Action บนหน้าจอเพื่อเดินเรื่องต่อ
-          เหมือนลูกค้าใช้งานจริงในแอป Messages — บาง use case มีทางแยกให้ลองกดดูทั้งสองทางด้วย
-        </p>
-      </div>
-
-      <div class="simulator-layout">
-        <div id="simulatorRoot" class="simulator-root"></div>
-        <div id="businessValue" class="business-value-panel"></div>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<footer class="site-footer">
-  <div class="container footer-inner">
-    <p>RCS Use Case Showcase · จัดทำโดยทีม Presale/Solution เพื่อใช้ present ลูกค้า</p>
-    <p class="footer-meta">© <span id="footerYear"></span> · Static demo — ไม่มีการส่งข้อความจริง</p>
-  </div>
-</footer>
+<!-- single persistent simulator instance, moved into the active use-case slide -->
+<div class="sim-holder"><div id="simulatorRoot" class="simulator-root"></div></div>
 
 <script src="js/usecases.js"></script>
 <script src="js/simulator.js"></script>
