@@ -88,7 +88,7 @@
           h('div', { class: 'hero-ind-cap' }, `${INDUSTRIES.length} อุตสาหกรรมพร้อมสาธิต`),
           h('div', { class: 'hero-ind-row' },
             INDUSTRIES.map((ind) => h('div', { class: 'hero-ind' },
-              h('span', { class: 'hero-ind-icon', 'aria-hidden': 'true' }, ind.icon),
+              h('span', { class: 'hero-ind-icon', 'aria-hidden': 'true', html: (window.ICONS && ICONS[ind.id]) || ind.icon }),
               h('span', { class: 'hero-ind-label' }, ind.labelTh)
             ))
           )
@@ -108,7 +108,7 @@
           'องค์ประกอบเหล่านี้คือสิ่งที่ทำให้ RCS ต่างจาก SMS ธรรมดา และเป็นวัตถุดิบของทุก use case ในเด็คนี้'),
         h('div', { class: 'cap-list' },
           CAPABILITIES.map((cap) => h('div', { class: 'cap-item' },
-            h('div', { class: 'cap-item-icon', 'aria-hidden': 'true' }, cap.icon),
+            h('div', { class: 'cap-item-icon', 'aria-hidden': 'true', html: (window.ICONS && ICONS[cap.id]) || cap.icon }),
             h('div', { class: 'cap-item-label' }, cap.label)
           ))
         )
@@ -129,7 +129,7 @@
       h('div', { class: 'uc-inner' },
         h('div', { class: 'uc-copy' },
           h('p', { class: 'uc-industry' },
-            h('span', { class: 'uc-industry-icon', 'aria-hidden': 'true' }, ind.icon),
+            h('span', { class: 'uc-industry-icon', 'aria-hidden': 'true', html: (window.ICONS && ICONS[ind.id]) || ind.icon }),
             `${ind.label} · ${ind.labelTh}`
           ),
           h('h2', { class: 'uc-title' }, uc.title),

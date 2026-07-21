@@ -163,9 +163,12 @@
       const uc = this.usecase;
       this.headerEl.innerHTML = '';
       this.headerEl.style.setProperty('--brand-color', uc.brand.color);
-      this.headerEl.appendChild(
-        h('div', { class: 'chat-avatar' }, uc.brand.icon)
-      );
+      // brand avatar: render the mapped industry line-icon (white stroke) instead of emoji
+      const avatar = h('div', { class: 'chat-avatar' });
+      const avatarSvg = window.ICONS && window.ICONS[uc.industry];
+      if (avatarSvg) avatar.innerHTML = avatarSvg;
+      else avatar.textContent = uc.brand.icon;
+      this.headerEl.appendChild(avatar);
       const nameRow = h('div', { class: 'chat-brand-row' },
         h('span', { class: 'chat-brand-name' }, uc.brand.name),
         h('span', { class: 'verified-badge', title: 'Verified Sender', 'aria-label': 'Verified Sender' })
