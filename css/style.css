@@ -5,21 +5,25 @@
 
 :root {
   --bg: #ffffff;
-  --bg-soft: #f4f6fb;
+  --bg-soft: #f5f8f1;
   --surface: #ffffff;
-  --surface-2: #f0f2f9;
-  --surface-3: #e6e9f4;
-  --border: #dde1ee;
-  --border-soft: #e8eaf3;
-  --text: #12141c;
-  --text-dim: #4b5165;
-  --text-faint: #7a8098;
+  --surface-2: #f1f5ec;
+  --surface-3: #e7eedd;
+  --border: #dde5d2;
+  --border-soft: #e9efe1;
+  --text: #161a13;
+  --text-dim: #4f5647;
+  --text-faint: #7c846f;
 
-  --accent: #7c5cff;
-  --accent-strong: #5b3fd6;
-  --accent-soft: #7c5cff1f;
-  --accent-2: #0e7490;
-  --accent-2-soft: #0e74901f;
+  /* AIS brand palette — vivid signature green, deep green for text-weight use.
+     --accent-bright is the logo-grade green: decorative fills/gradients only
+     (too light to carry text); --accent / --accent-strong stay legible on white. */
+  --accent: #55a01c;
+  --accent-strong: #3b7a10;
+  --accent-bright: #8dc63f;
+  --accent-soft: #8dc63f30;
+  --accent-2: #2e7d32;
+  --accent-2-soft: #2e7d3222;
   --success: #0f9d6b;
   --success-soft: #0f9d6b22;
   --danger: #e0453f;
@@ -89,7 +93,7 @@ h1, h2, h3, p { margin: 0; }
 }
 .btn:active { transform: scale(0.97); }
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #5a3fe0);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #fff;
   box-shadow: 0 8px 24px -8px var(--accent-soft);
 }
@@ -136,7 +140,7 @@ h1, h2, h3, p { margin: 0; }
 .brand-logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.1rem; }
 .brand-logo-mark {
   width: 36px; height: 36px; border-radius: 10px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  background: linear-gradient(135deg, var(--accent-bright), var(--accent-2));
   display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
 }
 .brand-logo-text span { color: var(--accent-2); }
@@ -376,7 +380,7 @@ h1, h2, h3, p { margin: 0; }
 }
 .text-bubble { border-bottom-left-radius: 4px; }
 .user-bubble {
-  background: linear-gradient(135deg, var(--accent), #5a3fe0);
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #fff; border: none; border-bottom-right-radius: 4px;
 }
 
@@ -1037,13 +1041,13 @@ body.deck-mode {
   --glass-blur: blur(22px) saturate(155%);
   --glass-blur-sm: blur(16px) saturate(150%);
   --glass-shadow:
-    0 22px 55px -26px rgba(58, 46, 120, 0.30),
-    0 4px 14px -8px rgba(58, 46, 120, 0.14);
-  --glass-shadow-sm: 0 10px 30px -14px rgba(58, 46, 120, 0.26);
+    0 22px 55px -26px rgba(30, 58, 24, 0.30),
+    0 4px 14px -8px rgba(30, 58, 24, 0.14);
+  --glass-shadow-sm: 0 10px 30px -14px rgba(30, 58, 24, 0.26);
   --deck-base:
-    radial-gradient(1200px 900px at 12% -6%, rgba(124, 92, 255, 0.12), transparent 55%),
-    radial-gradient(1100px 820px at 96% 6%, rgba(14, 116, 144, 0.10), transparent 55%),
-    linear-gradient(180deg, #fbfbfe, #f4f5fb 58%, #eef0f8);
+    radial-gradient(1200px 900px at 12% -6%, rgba(141, 198, 63, 0.20), transparent 55%),
+    radial-gradient(1100px 820px at 96% 6%, rgba(46, 125, 50, 0.12), transparent 55%),
+    linear-gradient(180deg, #fcfdfa, #f4f8ee 58%, #edf4e6);
 }
 
 /* ---- layered ambient background (replaces flat white) ---- */
@@ -1064,13 +1068,13 @@ body.deck-mode { background: var(--deck-base); }
 .deck::before {
   width: 48vw; height: 48vw;
   left: -10vw; top: -12vh;
-  background: radial-gradient(circle, rgba(124, 92, 255, 0.20), transparent 68%);
+  background: radial-gradient(circle, rgba(141, 198, 63, 0.28), transparent 68%);
   animation: bloomDriftA 26s ease-in-out infinite alternate;
 }
 .deck::after {
   width: 54vw; height: 54vw;
   right: -14vw; bottom: -18vh;
-  background: radial-gradient(circle, rgba(14, 116, 144, 0.17), transparent 68%);
+  background: radial-gradient(circle, rgba(46, 125, 50, 0.18), transparent 68%);
   animation: bloomDriftB 32s ease-in-out infinite alternate;
 }
 @keyframes bloomDriftA {
@@ -1121,7 +1125,7 @@ body.deck-mode { background: var(--deck-base); }
 }
 .slide-caps .cap-item:hover {
   transform: translateY(-4px);
-  box-shadow: 0 28px 60px -28px rgba(58, 46, 120, 0.36), var(--glass-shadow);
+  box-shadow: 0 28px 60px -28px rgba(30, 58, 24, 0.36), var(--glass-shadow);
 }
 
 /* closing pillars — glass tiles */
@@ -1140,9 +1144,9 @@ body.deck-mode { background: var(--deck-base); }
 /* phone simulator floats on the glass (soft ambient shadow beneath) */
 .deck .phone-shell {
   box-shadow:
-    0 44px 90px -34px rgba(50, 40, 110, 0.48),
-    0 14px 34px -20px rgba(50, 40, 110, 0.32),
-    0 0 0 2px #2a3155 inset;
+    0 44px 90px -34px rgba(28, 54, 22, 0.48),
+    0 14px 34px -20px rgba(28, 54, 22, 0.32),
+    0 0 0 2px #29332a inset;
 }
 
 /* ---- nav arrows + bottom chrome: cohesive frosted-glass language ---- */
